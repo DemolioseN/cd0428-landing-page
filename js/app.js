@@ -2,8 +2,8 @@
  * Define Global Variables
  * 
 */
-const sections = document.querySelectorAll('section');
-const navList = document.getElementById('nav-list');
+const pageSections = document.querySelectorAll('section');
+const navigationList = document.getElementById('nav-list');
 
 /**
  * End Global Variables
@@ -12,18 +12,18 @@ const navList = document.getElementById('nav-list');
 */
 
 /**
- * Returns true if an element is in the viewport
- * @param {Element} elem
+ * Returns true if an element is within the visible area of the viewport
+ * @param {Element} element
  * @returns {Boolean}
  */
-function isInViewport(elem) {
-  const rect = elem.getBoundingClientRect();
-  const threshold = 200; // adjust this value to determine when a section is "near the top"
+function isElementVisible(element) {
+  const boundingRect = element.getBoundingClientRect();
+  const thresholdValue = 200; // adjust this value to determine when a section is "near the top"
   return (
-    rect.top <= window.innerHeight - threshold &&
-    rect.left >= 0 &&
-    rect.bottom >= threshold &&
-    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+    boundingRect.top <= globalThis.innerHeight - thresholdValue &&
+    boundingRect.left >= 0 &&
+    boundingRect.bottom >= thresholdValue &&
+    boundingRect.right <= (globalThis.innerWidth || document.documentElement.clientWidth)
   );
 }
 
@@ -34,28 +34,28 @@ function isInViewport(elem) {
 */
 
 /**
- * Builds the navigation menu
+ * Constructs the navigation menu
  */
-function buildNav() {
-  sections.forEach((section) => {
-    const navItem = document.createElement('li');
-    const navLink = document.createElement('a');
-    navLink.textContent = section.getAttribute('data-nav');
-    navLink.href = `#${section.id}`;
-    navItem.appendChild(navLink);
-    navList.appendChild(navItem);
+function constructNavigation() {
+  pageSections.forEach((section) => {
+    const navigationItem = document.createElement('li');
+    const navigationLink = document.createElement('a');
+    navigationLink.textContent = section.getAttribute('data-nav');
+    navigationLink.href = `#${section.id}`;
+    navigationItem.appendChild(navigationLink);
+    navigationList.appendChild(navigationItem);
   });
 }
 
 /**
  * Adds the 'active' class to a section when it's near the top of the viewport
  */
-function setActiveSection() {
-  sections.forEach((section) => {
+function highlightActiveSection() {
+  pageSections.forEach((section) => {
     section.classList.remove('active'); // remove active class from all sections
   });
-  sections.forEach((section) => {
-    if (isInViewport(section)) {
+  pageSections.forEach((section) => {
+    if (isElementVisible(section)) {
       section.classList.add('active');
     }
   });
@@ -65,7 +65,7 @@ function setActiveSection() {
  * Scrolls to an anchor ID using the scrollIntoView method
  * @param {Event} event
  */
-function scrollToAnchor(event) {
+function navigateToAnchor(event) {
   event.preventDefault();
   const anchorId = event.target.getAttribute('href').replace(/^#/, ''); // use regex to remove leading #
   const anchorElement = document.getElementById(anchorId);
@@ -79,28 +79,28 @@ function scrollToAnchor(event) {
 */
 
 /**
- * Builds the navigation menu on page load
+ * Constructs the navigation menu on page load
  */
-buildNav();
+constructNavigation();
 
 /**
  * Listens for clicks on navigation links and scrolls to the corresponding section
  */
-navList.addEventListener('click', (event) => {
+navigationList.addEventListener('click', (event) => {
   if (event.target.tagName === 'A' || event.target.closest('a')) { // use event delegation
-    scrollToAnchor(event);
+    navigateToAnchor(event);
   }
 });
 
 /**
  * Listens for scroll events and updates the active section
  */
-let throttleTimeout;
-window.addEventListener('scroll', () => {
-  if (!throttleTimeout) {
-    throttleTimeout = setTimeout(() => {
-      setActiveSection();
-      throttleTimeout = null;
+let throttleTimer;
+globalThis.addEventListener('scroll', () => {
+  if (!throttleTimer) {
+    throttleTimer = setTimeout(() => {
+      highlightActiveSection();
+      throttleTimer = null;
     }, 200); // adjust this value to control the throttle frequency
   }
 });
