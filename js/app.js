@@ -18,10 +18,11 @@ const navList = document.getElementById('nav-list');
  */
 function isInViewport(elem) {
   const rect = elem.getBoundingClientRect();
+  const threshold = 200; // adjust this value to determine when a section is "near the top"
   return (
-    rect.top >= 0 &&
+    rect.top <= window.innerHeight - threshold &&
     rect.left >= 0 &&
-    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+    rect.bottom >= threshold &&
     rect.right <= (window.innerWidth || document.documentElement.clientWidth)
   );
 }
@@ -51,10 +52,11 @@ function buildNav() {
  */
 function setActiveSection() {
   sections.forEach((section) => {
+    section.classList.remove('active'); // remove active class from all sections
+  });
+  sections.forEach((section) => {
     if (isInViewport(section)) {
       section.classList.add('active');
-    } else {
-      section.classList.remove('active');
     }
   });
 }
@@ -65,7 +67,7 @@ function setActiveSection() {
  */
 function scrollToAnchor(event) {
   event.preventDefault();
-  const anchorId = event.target.getAttribute('href').substring(1);
+  const anchorId = event.target.getAttribute('href').replace(/^#/, ''); // use regex to remove leading #
   const anchorElement = document.getElementById(anchorId);
   anchorElement.scrollIntoView({ behavior: 'smooth' });
 }
@@ -85,7 +87,7 @@ buildNav();
  * Listens for clicks on navigation links and scrolls to the corresponding section
  */
 navList.addEventListener('click', (event) => {
-  if (event.target.tagName === 'A') {
+  if (event.target.tagName === 'A' || event.target.closest('a')) { // use event delegation
     scrollToAnchor(event);
   }
 });
@@ -93,4 +95,12 @@ navList.addEventListener('click', (event) => {
 /**
  * Listens for scroll events and updates the active section
  */
-window.addEventListener('scroll', setActiveSection);
+let throttleTimeout;
+window.addEventListener('scroll', () => {
+  if (!throttleTimeout) {
+    throttleTimeout = setTimeout(() => {
+      setActiveSection();
+      throttleTimeout = null;
+    }, 200); // adjust this value to control the throttle frequency
+  }
+});
